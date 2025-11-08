@@ -1,16 +1,26 @@
----
-title: "Homework 5"
-output: github_document
-date: "2025-11-8"
-author: Evan Kennedy, ELK2149
----
+Homework 5
+================
+Evan Kennedy, ELK2149
+2025-11-8
 
 ***Problem 1***
 
-
-
-```{r}
+``` r
 library(dplyr)
+```
+
+    ## 
+    ## Attaching package: 'dplyr'
+
+    ## The following objects are masked from 'package:stats':
+    ## 
+    ##     filter, lag
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     intersect, setdiff, setequal, union
+
+``` r
 library(tidyr)
 library(purrr)
 library(ggplot2)
@@ -23,10 +33,11 @@ repeated_bday = length(unique(birthdays)) < 5
 repeated_bday
 ```
 
+    ## [1] FALSE
+
 put this in a function
 
-```{r}
-
+``` r
 bday_sim = function(n_room) {
 
     birthdays = sample(1:365, n_room, replace = TRUE)
@@ -40,8 +51,9 @@ bday_sim = function(n_room) {
 bday_sim(5)
 ```
 
-```{r}
+    ## [1] FALSE
 
+``` r
 bday_sim_results = 
   expand_grid(
     bdays = 2:50,
@@ -60,20 +72,39 @@ bday_sim_results =
 bday_sim_results
 ```
 
-#plot this
+    ## # A tibble: 49 × 2
+    ##    bdays prob_repeat
+    ##    <int>       <dbl>
+    ##  1     2      0.0027
+    ##  2     3      0.0074
+    ##  3     4      0.0168
+    ##  4     5      0.0257
+    ##  5     6      0.0384
+    ##  6     7      0.055 
+    ##  7     8      0.0742
+    ##  8     9      0.0938
+    ##  9    10      0.118 
+    ## 10    11      0.142 
+    ## # ℹ 39 more rows
 
-```{r}
+\#plot this
+
+``` r
 bday_sim_results |> 
   ggplot(aes(x = bdays, y = prob_repeat)) +
   geom_point() +
   geom_line()
 ```
 
-#the probability of having two people with the same birthday does not increase at a linear pace as the group size increased from 2 to 50 people.
+![](Homework-5_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+\#the probability of having two people with the same birthday does not
+increase at a linear pace as the group size increased from 2 to 50
+people.
 
 ***Problem 2***
 
-```{r}
+``` r
 n = 30
 sd = 5
 u = 0
@@ -100,8 +131,12 @@ estimated_type1_error <-
   pull(type1)
 
 estimated_type1_error
+```
 
-simulation_1 = 
+    ## [1] 0.0466
+
+``` r
+simulation_1_6 = 
   expand_grid(
     u = 1:6,
     iter = 1:5000
@@ -110,7 +145,7 @@ simulation_1 =
   unnest(out)
 
 power_results = 
-  simulation_1 |>
+  simulation_1_6 |>
   mutate(reject = p_value < a) |>
   group_by(u) |>
   summarize(
@@ -120,43 +155,12 @@ power_results =
 power_results
 ```
 
-```{r}
-power_results |>
-  ggplot(aes(x = u, y = power)) +
-  geom_point() +
-  geom_line() +
-  labs(
-    x = "Value of μ",
-    y = "Power"
-  )
-
-```
-
-# Power increases as μ increases.
-
-```{r}
-estimates_1 =
-  simulation_1 |>
-  mutate(reject = p_value < a) |>
-  group_by(u) |>
-  summarize(
-    mean_hat = mean(sample_mean),
-    mean_hat_reject = mean(sample_mean[reject]),
-    .groups = "drop"
-  )
-
-# Plot both series on the same axes
-estimates_1 |>
-  ggplot(aes(x = u)) +
-  geom_point(aes(y = mean_hat)) +
-  geom_line(aes(y = mean_hat)) +
-  geom_point(aes(y = mean_hat_reject)) +
-  geom_line(aes(y = mean_hat_reject)) +
-  labs(
-    x = "Value of μ",
-    y = "Average estimate of μ̂"
-  )
-
-```
-
-#Across all simulations, the average u estimate is approximately the true u. When restricting to rejected tests, the average u is inflated, especially for small u values.
+    ## # A tibble: 6 × 2
+    ##       u power
+    ##   <int> <dbl>
+    ## 1     1 0.182
+    ## 2     2 0.554
+    ## 3     3 0.891
+    ## 4     4 0.990
+    ## 5     5 0.999
+    ## 6     6 1
