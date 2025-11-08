@@ -15,6 +15,8 @@ library(tidyr)
 library(purrr)
 library(ggplot2)
 library(broom)
+library(tidyverse)
+library(janitor)
 
 birthdays = sample(1:365, 5, replace = TRUE)
 
@@ -160,3 +162,61 @@ estimates_1 |>
 ```
 
 #Across all simulations, the average u estimate is approximately the true u. When restricting to rejected tests, the average u is inflated, especially for small u values.
+
+***Problem 3***
+
+```{r}
+#first, pull in dataset
+
+homicides = 
+  read_csv("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv") |> 
+  clean_names()
+
+#create city_state variable
+homicides =
+  homicides |>
+  mutate(city_state = str_c(city, ", ", state))
+
+homicides |> select(city, state, city_state) |> head()
+
+```
+
+#now collected all unsolved cases for each
+
+```{r}
+city_summaries =
+  homicides |>
+  mutate(unsolved_cases = disposition %in% c("Closed without arrest", "Open/No arrest")) |>
+  group_by(city_state) |>
+  summarize(
+    total = n(),
+    unsolved = sum(unsolved_cases),
+    .groups = "drop"
+  )
+
+city_summaries
+```
+
+#focusing on baltimore
+
+```{r}
+
+baltimore =
+  city_summaries |>
+  filter(city_state == "Baltimore, MD")
+
+baltimore
+
+baltimore_test =
+  prop.test(
+    x = baltimore$unsolved,
+    n = baltimore$total
+  )
+
+baltimore_tidy =
+  tidy(baltimore_test)
+
+baltimore_tidy |>
+  select(estimate, conf.low, conf.high)
+
+```
