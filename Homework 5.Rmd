@@ -8,7 +8,7 @@ author: Evan Kennedy, ELK2149
 ***Problem 1***
 
 
-
+# make initial function, after pulling in necessary libaries for the whole project
 ```{r}
 library(dplyr)
 library(tidyr)
@@ -25,7 +25,7 @@ repeated_bday = length(unique(birthdays)) < 5
 repeated_bday
 ```
 
-put this in a function
+#put this in a function
 
 ```{r}
 
@@ -41,6 +41,8 @@ bday_sim = function(n_room) {
 
 bday_sim(5)
 ```
+
+#make it from 10000 iterations, group by bdays
 
 ```{r}
 
@@ -76,10 +78,13 @@ bday_sim_results |>
 ***Problem 2***
 
 ```{r}
+#set variables
 n = 30
 sd = 5
 u = 0
 a = 0.05
+
+#run the single function
 
 run_one = function(u, n, sd) {
   x = rnorm(n, mean = u, sd = sd)
@@ -90,13 +95,14 @@ run_one = function(u, n, sd) {
   )
 }
 
+#run the larger simulation
 simulation = 
   expand_grid(iter = 1:5000) |> 
   mutate(out = map(iter, ~ run_one(u = u, n = n, sd = sd))) |>
   unnest(out)
 
-
-estimated_type1_error <-
+#estimate type 1 error
+estimated_type1_error =
   simulation |>
   summarize(type1 = mean(p_value < a)) |>
   pull(type1)
@@ -111,6 +117,7 @@ simulation_1 =
   mutate(out = map(u, ~ run_one(u = .x, n = n, sd = sd))) |>
   unnest(out)
 
+#calculate power
 power_results = 
   simulation_1 |>
   mutate(reject = p_value < a) |>
@@ -123,6 +130,8 @@ power_results
 ```
 
 ```{r}
+
+#graph power results
 power_results |>
   ggplot(aes(x = u, y = power)) +
   geom_point() +
@@ -137,6 +146,8 @@ power_results |>
 # Power increases as μ increases.
 
 ```{r}
+
+#
 estimates_1 =
   simulation_1 |>
   mutate(reject = p_value < a) |>
@@ -147,7 +158,8 @@ estimates_1 =
     .groups = "drop"
   )
 
-# Plot both series on the same axes
+#double plot of estimate of U and estimate of U only when null was rejected
+
 estimates_1 |>
   ggplot(aes(x = u)) +
   geom_point(aes(y = mean_hat)) +
@@ -156,7 +168,7 @@ estimates_1 |>
   geom_line(aes(y = mean_hat_reject)) +
   labs(
     x = "Value of μ",
-    y = "Average estimate of μ̂"
+    y = "Average estimate of u"
   )
 
 ```
@@ -219,4 +231,42 @@ baltimore_tidy =
 baltimore_tidy |>
   select(estimate, conf.low, conf.high)
 
+```
+
+#now run the function for all cities
+
+```{r}
+
+city_results =
+  city_summaries |>
+  mutate(
+    test = map2(unsolved, total, ~ prop.test(.x, .y))
+  ) |>
+  mutate(
+    test_tidy = map(test, tidy)
+  ) |>
+  unnest(test_tidy)
+
+city_results =
+  city_results |>
+  select(city_state, total, unsolved, estimate, conf.low, conf.high)
+
+city_results
+
+```
+
+#now plot this, using error bars
+
+```{r}
+city_results |>
+  mutate(city_state = fct_reorder(city_state, estimate)) |>
+  ggplot(aes(x = city_state, y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) +
+  coord_flip() +
+  labs(
+    x = "City",
+    y = "Proportion Unsolved",
+    title = "Proportion of Unsolved Homicides by City"
+  )
 ```
