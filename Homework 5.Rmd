@@ -14,3 +14,18 @@ repeated_bday = length(unique(birthdays)) < 5
 
 repeated_bday
 ```
+
+put this in a function
+
+```{r}
+
+bday_sim = function(n_room) {
+
+    birthdays = sample(1:365, n_room, replace = TRUE)
+
+    repeated_bday = length(unique(birthdays)) < n_room
+
+    repeated_bday
+    
+}
+```
