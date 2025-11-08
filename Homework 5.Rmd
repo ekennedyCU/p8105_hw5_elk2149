@@ -14,6 +14,7 @@ library(dplyr)
 library(tidyr)
 library(purrr)
 library(ggplot2)
+library(broom)
 
 birthdays = sample(1:365, 5, replace = TRUE)
 
@@ -69,3 +70,36 @@ bday_sim_results |>
 ```
 
 #the probability of having two people with the same birthday does not increase at a linear pace as the group size increased from 2 to 50 people.
+
+***Problem 2***
+
+```{r}
+n = 30
+sd = 5
+u = 0
+a = 0.05
+
+run_one = function(u, n, sd) {
+  x = rnorm(n, mean = u, sd = sd)
+  t_test = t.test(x, mu = 0)
+  tibble(
+    sample_mean  = mean(x),
+    p_value = tidy(t_test)$p.value
+  )
+}
+
+simulation = 
+  expand_grid(iter = 1:5000) |> 
+  mutate(out = map(iter, ~ run_one(u = u, n = n, sd = sd))) |>
+  unnest(out)
+
+
+estimated_power <-
+  simulation |>
+  summarize(power = mean(p_value < a)) |>
+  pull(power)
+
+estimated_power
+  
+```
+
