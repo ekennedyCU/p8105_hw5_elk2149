@@ -1,0 +1,16 @@
+---
+title: "Homework 5"
+output: github_document
+date: "2025-11-8"
+author: Evan Kennedy, ELK2149
+---
+
+***Problem 1***
+
+```{r}
+birthdays = sample(1:365, 5, replace = TRUE)
+
+repeated_bday = length(unique(birthdays)) < 5
+
+repeated_bday
+```
