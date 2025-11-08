@@ -7,7 +7,14 @@ author: Evan Kennedy, ELK2149
 
 ***Problem 1***
 
+
+
 ```{r}
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(ggplot2)
+
 birthdays = sample(1:365, 5, replace = TRUE)
 
 repeated_bday = length(unique(birthdays)) < 5
@@ -28,4 +35,37 @@ bday_sim = function(n_room) {
     repeated_bday
     
 }
+
+bday_sim(5)
 ```
+
+```{r}
+
+bday_sim_results = 
+  expand_grid(
+    bdays = 2:50,
+    iter = 1:10000
+  ) |> 
+  mutate(
+    result = map_lgl(bdays, bday_sim)
+  ) |> 
+  group_by(
+    bdays
+    ) |> 
+  summarize(
+    prob_repeat = mean(result)
+  )
+  
+bday_sim_results
+```
+
+#plot this
+
+```{r}
+bday_sim_results |> 
+  ggplot(aes(x = bdays, y = prob_repeat)) +
+  geom_point() +
+  geom_line()
+```
+
+#the probability of having two people with the same birthday does not increase at a linear pace as the group size increased from 2 to 50 people.
